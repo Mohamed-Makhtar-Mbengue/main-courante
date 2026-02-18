@@ -8,24 +8,27 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('events.index');
+    return redirect()->route('home');
 });
 
 Auth::routes();
 
-// Groupe protégé par authentification
+// Routes protégées par authentification
 Route::middleware(['auth'])->group(function () {
 
-    // Admin + Mi-admin
+    // Admin + Mi-admin : gestion des événements, utilisateurs, shifts
     Route::middleware(['role:admin,mi-admin'])->group(function () {
+        Route::get('/admin', [UserController::class, 'adminDashboard'])->name('admin.dashboard');
         Route::resource('events', EventController::class);
         Route::resource('users', UserController::class);
-        Route::resource('shifts', ShiftController::class)->only(['store', 'destroy']);
+        Route::resource('shifts', ShiftController::class);
+
+        
     });
 
-    // Admin + Mi-admin + User
+    // Tous les rôles : admin, mi-admin, user
     Route::middleware(['role:admin,mi-admin,user'])->group(function () {
-        Route::resource('maincourante', MainCouranteController::class)->only(['store', 'destroy']);
+        Route::resource('maincourante', MainCouranteController::class);
     });
 });
 

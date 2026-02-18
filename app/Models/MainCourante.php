@@ -4,10 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Shift extends Model
+class MainCourante extends Model
 {
+    protected $table = 'main_courante_entries';
+
     protected $fillable = [
-        'event_id', 'user_id', 'type', 'carte_pro', 'h_arrivee', 'h_depart', 'signature'
+        'event_id',
+        'user_id',
+        'heure_evenement',
+        'description',
+        'signature',
     ];
 
     public function event()
@@ -20,4 +26,3 @@ class Shift extends Model
         return $this->belongsTo(User::class);
     }
 }
-

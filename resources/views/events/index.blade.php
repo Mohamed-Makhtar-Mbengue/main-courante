@@ -5,7 +5,7 @@
 @section('content')
     <h1>Liste des événements</h1>
 
-    @if(in_array(auth()->user()->role->name, ['admin', 'mi-admin']))
+    @if(auth()->user()->roles->pluck('name')->intersect(['admin', 'mi-admin'])->isNotEmpty())
         <a href="{{ route('events.create') }}">Créer un événement</a>
     @endif
 
@@ -21,8 +21,8 @@
         <tbody>
             @foreach($events as $event)
                 <tr>
-                    <td>{{ $event->name }}</td>
-                    <td>{{ $event->responsable }}</td>
+                    <td>{{ $event->name ?? 'Sans nom' }}</td>
+                    <td>{{ $event->responsable ?? '—' }}</td>
                     <td>{{ $event->start_date }} - {{ $event->end_date }}</td>
                     <td><a href="{{ route('events.show', $event) }}">Voir</a></td>
                 </tr>

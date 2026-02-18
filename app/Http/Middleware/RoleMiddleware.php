@@ -10,7 +10,12 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (!$user || !in_array($user->role->name, $roles)) {
+        if (!$user) {
+            abort(403, 'Accès refusé');
+        }
+
+        // Vérifie si l'utilisateur possède AU MOINS un des rôles demandés
+        if (!$user->roles()->whereIn('name', $roles)->exists()) {
             abort(403, 'Accès refusé');
         }
 

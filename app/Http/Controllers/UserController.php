@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Event;
+use App\Models\Shift;
+use App\Models\MainCourante;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -63,5 +66,20 @@ class UserController extends Controller
     {
         $user->delete();
         return redirect()->route('users.index')->with('success', 'Utilisateur supprimé.');
+    }
+
+    public function adminDashboard()
+    {
+        $usersCount = User::count();
+        $eventsCount = Event::count();
+        $shiftsCount = Shift::count();
+        $mainCouranteCount = MainCourante::count();
+
+        return view('admin.dashboard', compact(
+            'usersCount',
+            'eventsCount',
+            'shiftsCount',
+            'mainCouranteCount'
+        ));
     }
 }

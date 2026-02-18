@@ -2,38 +2,35 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin',
-                'password' => bcrypt('password'),
-                'role_id' => 1,
-            ]
-        );
+        // ADMIN
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password'),
+        ]);
+        $admin->roles()->attach([1, 2]); // admin + mi-admin
 
-        User::firstOrCreate(
-            ['email' => 'miadmin@example.com'],
-            [
-                'name' => 'Mi-admin',
-                'password' => bcrypt('password'),
-                'role_id' => 2,
-            ]
-        );
+        // MI-ADMIN
+        $miadmin = User::create([
+            'name' => 'Mi Admin',
+            'email' => 'miadmin@example.com',
+            'password' => bcrypt('password'),
+        ]);
+        $miadmin->roles()->attach(2); // mi-admin
 
-        User::firstOrCreate(
-            ['email' => 'user@example.com'],
-            [
-                'name' => 'Utilisateur',
-                'password' => bcrypt('password'),
-                'role_id' => 3,
-            ]
-        );
+        // USER SIMPLE
+        $user = User::create([
+            'name' => 'Utilisateur',
+            'email' => 'user@example.com',
+            'password' => bcrypt('password'),
+        ]);
+        $user->roles()->attach(3); // user
     }
 }

@@ -2,38 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MainCourante;
 use Illuminate\Http\Request;
 
 class MainCouranteController extends Controller
 {
-    public function __construct()
+    public function index()
     {
-        $this->middleware(['auth', 'role:admin,mi-admin,user']);
+        // L'utilisateur simple voit uniquement ses propres entrées
+        $entries = MainCourante::where('user_id', auth()->id())->get();
+
+        return view('maincourante.index', compact('entries'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'event_id' => 'required|exists:events,id',
+        $request->validate([
             'heure_evenement' => 'required',
             'description' => 'required',
+            'event_id' => 'required|integer',
         ]);
 
-        $data['user_id'] = auth()->id();
+        MainCourante::create([
+            'user_id' => auth()->id(),
+            'event_id' => $request->event_id,
+            'heure_evenement' => $request->heure_evenement,
+            'description' => $request->description,
+        ]);
 
-        MainCouranteEntry::create($data);
-
-        return back()->with('success', 'Entrée ajoutée à la main courante.');
+        return back()->with('success', 'Entrée ajoutée.');
     }
 
-    public function destroy(MainCouranteEntry $maincourante)
+    public function destroy($id)
     {
-        // Option : limiter la suppression aux admins/mi-admin
-        if (!in_array(auth()->user()->role->name, ['admin', 'mi-admin'])) {
+        $entry = MainCourante::findOrFail($id);
+
+        // Un user ne peut supprimer que ses propres entrées
+        if ($entry->user_id !== auth()->id()) {
             abort(403);
         }
 
-        $maincourante->delete();
+        $entry->delete();
 
         return back()->with('success', 'Entrée supprimée.');
     }

@@ -3,8 +3,9 @@
 @section('title', 'Fiche événement')
 
 @section('content')
-    <h1>{{ $event->name }}</h1>
-    <p>Responsable : {{ $event->responsable }}</p>
+    <h1>{{ $event->name ?? 'Sans nom' }}</h1>
+
+    <p>Responsable : {{ $event->responsable ?? '—' }}</p>
     <p>Du {{ $event->start_date }} au {{ $event->end_date }}</p>
     <p>{{ $event->description }}</p>
 
@@ -12,7 +13,8 @@
 
     <h2>Services (Jour / Nuit)</h2>
 
-    @if(in_array(auth()->user()->role->name, ['admin', 'mi-admin']))
+    {{-- Vérification multi-rôles correcte --}}
+    @if(auth()->user()->roles->pluck('name')->intersect(['admin', 'mi-admin'])->isNotEmpty())
         <form action="{{ route('shifts.store') }}" method="POST">
             @csrf
             <input type="hidden" name="event_id" value="{{ $event->id }}">
@@ -42,7 +44,8 @@
     <ul>
         @foreach($event->shifts as $shift)
             <li>
-                {{ $shift->type }} - {{ $shift->user->name ?? 'N/A' }} :
+                {{ $shift->type }} -
+                {{ $shift->user->name ?? 'N/A' }} :
                 {{ $shift->h_arrivee }} - {{ $shift->h_depart }}
             </li>
         @endforeach
@@ -68,7 +71,8 @@
     <ul>
         @foreach($event->entries as $entry)
             <li>
-                {{ $entry->heure_evenement }} - {{ $entry->user->name }} :
+                {{ $entry->heure_evenement }} -
+                {{ $entry->user->name ?? 'N/A' }} :
                 {{ $entry->description }}
             </li>
         @endforeach

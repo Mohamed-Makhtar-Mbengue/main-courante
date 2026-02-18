@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Shift;
+
 
 class ShiftController extends Controller
 {
@@ -26,4 +28,11 @@ class ShiftController extends Controller
 
         return back()->with('success', 'Service ajouté.');
     }
+
+    public function index()
+    {
+        $shifts = Shift::all();
+        return view('shifts.index', compact('shifts'));
+    }
+
 }
