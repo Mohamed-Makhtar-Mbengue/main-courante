@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class EventController extends Controller
 {
@@ -38,11 +39,15 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('success', 'Événement créé.');
     }
 
+    
     public function show(Event $event)
     {
         $event->load(['shifts.user', 'entries.user']);
-        return view('events.show', compact('event'));
+        $users = User::orderBy('name')->get();
+
+        return view('events.show', compact('event', 'users'));
     }
+
 
     public function edit(Event $event)
     {
