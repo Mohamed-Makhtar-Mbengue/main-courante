@@ -2,29 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class HomeController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
-{
-    $user = auth()->user();
-    $roles = $user->roles->pluck('name');
+    {
+        $user = auth()->user();
 
-    if ($roles->contains('admin') || $roles->contains('mi-admin')) {
-        return redirect()->route('admin.dashboard');
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->hasRole('user')) {
+            return redirect()->route('main-courante.index');
+        }
+
+        abort(403, 'Accès refusé');
     }
-
-    if ($roles->contains('user')) {
-        return redirect()->route('maincourante.index');
-    }
-
-    abort(403);
-}
-
 }

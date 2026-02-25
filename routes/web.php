@@ -13,23 +13,48 @@ Route::get('/', function () {
 
 Auth::routes();
 
-// Routes protégées par authentification
+// Routes accessibles uniquement aux utilisateurs connectés
 Route::middleware(['auth'])->group(function () {
 
-    // Admin + Mi-admin : gestion des événements, utilisateurs, shifts
-    Route::middleware(['role:admin,mi-admin'])->group(function () {
-        Route::get('/admin', [UserController::class, 'adminDashboard'])->name('admin.dashboard');
-        Route::resource('events', EventController::class);
-        Route::resource('users', UserController::class);
-        Route::resource('shifts', ShiftController::class);
+    // 🟩 Espace ADMIN
+    Route::middleware(['role:admin'])->group(function () {
 
-        
+        // Dashboard admin
+        Route::get('/admin', [UserController::class, 'adminDashboard'])
+            ->name('admin.dashboard');
+
+        // Gestion des utilisateurs
+        Route::resource('users', UserController::class);
+
+        // Gestion des événements
+        Route::resource('events', EventController::class);
+
+        // Gestion des shifts
+        Route::resource('shifts', ShiftController::class);
     });
 
-    // Tous les rôles : admin, mi-admin, user
-    Route::middleware(['role:admin,mi-admin,user'])->group(function () {
-        Route::resource('maincourante', MainCouranteController::class);
+    // 🟦 Espace USER (et admin)
+    Route::middleware(['role:admin,user'])->group(function () {
+
+        // Page principale
+        Route::get('/main-courante', [MainCouranteController::class, 'index'])
+            ->name('main-courante.index');
+
+        // Ajout normal
+        Route::post('/main-courante', [MainCouranteController::class, 'store'])
+            ->name('main-courante.store');
+
+        // Formulaire d’ajout
+        Route::get('/main-courante/create', [MainCouranteController::class, 'create'])
+            ->name('main-courante.create');
+
+        // Entrée rapide
+        Route::post('/main-courante/quick', [MainCouranteController::class, 'quickAdd'])
+            ->name('main-courante.quick');
     });
 });
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Page d’accueil après login
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])
+    ->middleware('auth')
+    ->name('home');

@@ -53,7 +53,7 @@
             Ajouter un service
         </a>
 
-        <a href="{{ route('maincourante.index') }}"
+        <a href="{{ route('main-courante.index') }}"
            class="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg shadow-lg transition">
             Ajouter une entrée main courante
         </a>
