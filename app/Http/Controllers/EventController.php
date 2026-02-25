@@ -13,11 +13,34 @@ class EventController extends Controller
         $this->middleware(['auth', 'role:admin,mi-admin']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::latest()->paginate(10);
-        return view('events.index', compact('events'));
+        $query = Event::query();
+
+        // Recherche texte
+        if ($request->search) {
+            $query->where('title', 'like', "%{$request->search}%");
+        }
+
+        // Filtre responsable
+        if ($request->responsable) {
+            $query->where('responsable', $request->responsable);
+        }
+
+        // Filtre date (événements couvrant une date)
+        if ($request->date) {
+            $query->whereDate('start_date', '<=', $request->date)
+                ->whereDate('end_date', '>=', $request->date);
+        }
+
+        $events = $query->latest()->paginate(10);
+
+        // Pour le filtre responsable
+        $responsables = Event::pluck('responsable')->unique();
+
+        return view('events.index', compact('events', 'responsables'));
     }
+
 
     public function create()
     {
@@ -27,14 +50,15 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required',
-            'responsable' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'description' => 'nullable',
+    'title' => 'required|string|max:255',
+    'responsable' => 'required|string|max:25',
+    'start_date' => 'required|date',
+    'end_date' => 'required|date|after_or_equal:start_date',
+    'description' => 'nullable|string',
         ]);
 
         Event::create($data);
+
 
         return redirect()->route('events.index')->with('success', 'Événement créé.');
     }
@@ -42,12 +66,13 @@ class EventController extends Controller
     
     public function show(Event $event)
     {
-        $event->load(['shifts.user', 'entries.user']);
-        $users = User::orderBy('name')->get();
+        $entries = $event->mainCouranteEntries()
+                        ->with('user')
+                        ->orderBy('created_at', 'desc')
+                        ->get();
 
-        return view('events.show', compact('event', 'users'));
+        return view('events.show', compact('event', 'entries'));
     }
-
 
     public function edit(Event $event)
     {
@@ -57,7 +82,7 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         $data = $request->validate([
-            'name' => 'required',
+            'title' => 'required',
             'responsable' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',

@@ -4,26 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
     public function up(): void
-{
-    Schema::create('roles', function (Blueprint $table) {
-        $table->id();
-        $table->string('name')->unique(); // admin, mi-admin, user
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique(); // ex: admin, mi-admin
+            $table->string('label')->nullable(); // libellé lisible
+            $table->timestamps();
+        });
+    }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('roles');
     }
 };
+

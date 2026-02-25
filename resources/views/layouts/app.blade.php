@@ -21,7 +21,7 @@
                 <a href="{{ route('events.index') }}" class="hover:text-blue-400">Événements</a>
                 <a href="{{ route('users.index') }}" class="hover:text-blue-400">Utilisateurs</a>
                 <a href="{{ route('shifts.index') }}" class="hover:text-blue-400">Services</a>
-                <a href="{{ route('maincourante.index') }}" class="hover:text-blue-400">Main Courante</a>
+                <a href="{{ route('main-courante.index') }}" class="hover:text-blue-400">Main Courante</a>
 
                 @auth
                     <form method="POST" action="{{ route('logout') }}">

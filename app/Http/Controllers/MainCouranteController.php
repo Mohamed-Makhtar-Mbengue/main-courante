@@ -2,48 +2,61 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\MainCourante;
 use Illuminate\Http\Request;
+
 
 class MainCouranteController extends Controller
 {
     public function index()
     {
-        // L'utilisateur simple voit uniquement ses propres entrées
-        $entries = MainCourante::where('user_id', auth()->id())->get();
+        $entries = MainCourante::with(['event', 'user'])
+                    ->latest()
+                    ->paginate(10);
 
-        return view('maincourante.index', compact('entries'));
+        $events = Event::orderBy('title')->get();
+
+        return view('maincourante.index', compact('entries', 'events'));
+    }
+
+
+    public function create()
+    {
+        return view('main-courante.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'heure_evenement' => 'required',
-            'description' => 'required',
-            'event_id' => 'required|integer',
+        $data = $request->validate([
+            'titre' => 'required|string|max:255',
+            'contenu' => 'required|string',
         ]);
 
         MainCourante::create([
+            'titre' => $data['titre'],
+            'contenu' => $data['contenu'],
             'user_id' => auth()->id(),
-            'event_id' => $request->event_id,
-            'heure_evenement' => $request->heure_evenement,
-            'description' => $request->description,
         ]);
 
-        return back()->with('success', 'Entrée ajoutée.');
+        return redirect()->route('main-courante.index')
+            ->with('success', 'Entrée ajoutée.');
     }
 
-    public function destroy($id)
+    // 🟦 ENTRÉE RAPIDE
+    public function quickAdd(Request $request)
     {
-        $entry = MainCourante::findOrFail($id);
+        $data = $request->validate([
+            'contenu' => 'required|string',
+        ]);
 
-        // Un user ne peut supprimer que ses propres entrées
-        if ($entry->user_id !== auth()->id()) {
-            abort(403);
-        }
+        MainCourante::create([
+            'titre' => 'Entrée rapide',
+            'contenu' => $data['contenu'],
+            'user_id' => auth()->id(),
+        ]);
 
-        $entry->delete();
-
-        return back()->with('success', 'Entrée supprimée.');
+        return redirect()->route('main-courante.index')
+            ->with('success', 'Entrée rapide ajoutée.');
     }
 }

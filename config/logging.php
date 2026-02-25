@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => ['single'],
             'ignore_exceptions' => false,
         ],
 
@@ -128,5 +128,12 @@ return [
         ],
 
     ],
+
+    'sensitive_parameters' => [
+         'password',
+          'email',
+           'token',
+            'remember_token',
+     ],
 
 ];

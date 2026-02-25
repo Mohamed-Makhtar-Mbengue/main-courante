@@ -11,11 +11,29 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('role')->paginate(10);
-        return view('users.index', compact('users'));
+        $query = User::query();
+
+        // Recherche nom
+        if ($request->search) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
+
+        // Filtre rôle
+        if ($request->role) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
+        }
+
+        $users = $query->paginate(10);
+
+        $roles = Role::all();
+
+        return view('users.index', compact('users', 'roles'));
     }
+
 
     public function create()
     {
@@ -32,9 +50,15 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
-        $data['password'] = bcrypt($data['password']);
+        // Création de l'utilisateur
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
 
-        User::create($data);
+        // Assignation du rôle dans la table pivot
+        $user->roles()->attach($data['role_id']);
 
         return redirect()->route('users.index')->with('success', 'Utilisateur créé.');
     }
@@ -48,19 +72,29 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'name' => 'required',
-            'email' => "required|email|unique:users,email,$user->id",
+            'name' => 'required|string',
+            'email' => "required|email|unique:users,email,{$user->id}",
             'role_id' => 'required|exists:roles,id',
+            'password' => 'nullable|min:6'
         ]);
 
-        if ($request->password) {
-            $data['password'] = bcrypt($request->password);
+        // Mise à jour du mot de passe si fourni
+        if (!empty($data['password'])) {
+            $data['password'] = bcrypt($data['password']);
+        } else {
+            unset($data['password']);
         }
 
+        // Mise à jour des infos utilisateur
         $user->update($data);
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour.');
+        // Mise à jour du rôle dans la table pivot
+        $user->roles()->sync([$data['role_id']]);
+
+        return redirect()->route('users.index')
+            ->with('success', 'Utilisateur mis à jour.');
     }
+
 
     public function destroy(User $user)
     {

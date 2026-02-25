@@ -7,18 +7,14 @@ use Closure;
 class RoleMiddleware
 {
     public function handle($request, Closure $next, ...$roles)
-    {
-        $user = $request->user();
+        {
+            $user = auth()->user();
 
-        if (!$user) {
-            abort(403, 'Accès refusé');
+            if (!$user || !$user->hasRole($roles)) {
+                abort(403, 'Accès refusé');
+            }
+
+            return $next($request);
         }
 
-        // Vérifie si l'utilisateur possède AU MOINS un des rôles demandés
-        if (!$user->roles()->whereIn('name', $roles)->exists()) {
-            abort(403, 'Accès refusé');
-        }
-
-        return $next($request);
-    }
 }

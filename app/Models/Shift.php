@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Shift extends Model
 {
     protected $fillable = [
-        'user_id',
         'event_id',
-        'start_time',
-        'end_time',
+        'user_id',
+        'type',
+        'carte_pro',
+        'h_arrivee',
+        'h_depart',
+        'signature',
     ];
 
     public function user()
@@ -23,3 +26,4 @@ class Shift extends Model
         return $this->belongsTo(Event::class);
     }
 }
+
